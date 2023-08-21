@@ -1,0 +1,5 @@
+﻿{
+  "start_pvp_tag_timer": "You are now in pvp for {0}.",
+  "end_pvp_tag_timer": "You are not in pvp now.",
+  "item-creature-cloneplayer": "Player's clone",
+}

@@ -1,0 +1,193 @@
+﻿{
+  "code": "creature",
+  "class": "ItemCreature",
+  "maxstacksize": 64,
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [ "npc", "cloneplayer"]
+    }
+  ],
+  "shapeByType": {
+    "*cloneplayer": { "base": "game:entity/humanoid/seraph-faceless" },
+    "*-cloneplayer-*": { "base": "game:entity/humanoid/seraph-faceless" },
+    "*-locust-*": { "base": "game:entity/land/locust-corrupt" }
+  },
+  "textureByType": {
+    "*cloneplayer": { "base": "game:entity/humanoid/seraph-naked-hairless" },
+    "*-cloneplayer-*": { "base": "game:entity/humanoid/seraph-naked-hairless" },
+    "*-locust-corrupt-fire": { "base": "chaoslands:entity/locust/corrupt-fire" },
+    "*-locust-corrupt-toxic": { "base": "chaoslands:entity/locust/corrupt-toxic" },
+    "*-locust-corrupt-explosive": { "base": "chaoslands:entity/locust/corrupt-explosive" }
+  },
+  "creativeinventory": {
+  },
+  "materialDensity": 600,
+  "guiTransformByType": {
+    "creature-locust-*": {
+      "translation": {
+        "x": 2,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": -20,
+        "y": -127,
+        "z": -180
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.2,
+        "z": 0.5
+      },
+      "scale": 1.88
+    },
+    "creature-cloneplayer-*": {
+      "rotation": {
+        "x": 0,
+        "y": -90,
+        "z": -178
+      },
+      "origin": {
+        "x": 0.6,
+        "y": 0.78,
+        "z": 0.5
+      }
+    },
+    "creature-cloneplayer": {
+      "rotation": {
+        "x": 0,
+        "y": -90,
+        "z": -178
+      },
+      "origin": {
+        "x": 0.6,
+        "y": 0.78,
+        "z": 0.5
+      }
+    }
+  },
+
+  "tpHandTransformByType": {
+    "creature-locust-*": {
+      "translation": {
+        "x": -1.1,
+        "y": -0.3,
+        "z": -0.7
+      },
+      "rotation": {
+        "x": -159,
+        "y": -21,
+        "z": -89
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.2,
+        "z": 0.5
+      },
+      "scale": 0.53
+    },
+    "creature-cloneplayer-*": {
+      "translation": {
+        "x": -0.6,
+        "y": -1.1,
+        "z": -0.4
+      },
+      "rotation": {
+        "x": -85,
+        "y": -11,
+        "z": 89
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0.5
+      },
+      "scale": 0.7
+    },
+    "creature-cloneplayer": {
+      "translation": {
+        "x": -0.6,
+        "y": -1.1,
+        "z": -0.4
+      },
+      "rotation": {
+        "x": -85,
+        "y": -11,
+        "z": 89
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 1,
+        "z": 0.5
+      },
+      "scale": 0.7
+    }
+  },
+
+  "fpHandTransformByType": {
+    "creature-locust-*": {
+      "translation": {
+        "x": 0.3,
+        "y": 0.09,
+        "z": 0
+      },
+      "rotation": {
+        "x": -149,
+        "y": -115,
+        "z": -180
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.1,
+        "z": 0.5
+      },
+      "scale": 1.65
+    },
+    "creature-cloneplayer-*": {
+      "translation": {
+        "x": 0.05,
+        "y": -0.3,
+        "z": 0
+      },
+      "rotation": {
+        "x": 165,
+        "y": 76,
+        "z": -180
+      }
+    },
+    "creature-cloneplayer": {
+      "translation": {
+        "x": 0.05,
+        "y": -0.3,
+        "z": 0
+      },
+      "rotation": {
+        "x": 165,
+        "y": 76,
+        "z": -180
+      }
+    }
+  },
+
+  "groundTransformByType": {
+    "*-locust-*": {
+      "translation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0,
+        "z": 0.5299
+      },
+      "scale": 1.95
+    }
+  }
+}
