@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="CommonLib">
+      <HintPath>..\..\..\..\..\..\Desktop\for_vs_libs\CommonLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PlayerCorpse">
+      <HintPath>..\..\..\..\..\..\Desktop\for_vs_libs\PlayerCorpse.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
       <Private>false</Private>

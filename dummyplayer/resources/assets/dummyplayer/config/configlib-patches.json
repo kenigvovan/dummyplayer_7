@@ -1,0 +1,57 @@
+{
+  "version": 0,
+  "file": "dummyplayer.json",
+  "patches": {},
+  "settings": [
+    {
+      "code": "SECONDS_PVP_TAG_TIMER",
+      "comment": "How long PvP state will last.",
+      "type": "integer",
+      "default": 30,
+      "range": {
+        "min": 10,
+        "max": 3600
+      }
+    },
+    {
+      "code": "DROP_ARMOR",
+      "comment": "Player's clone will contain player's armor.",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "code": "DROP_CLOTHS",
+      "comment": "Player's clone will contain player's cloths.",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "code": "DROP_HOTBAR",
+      "comment": "Player's clone will contain player's hotbar slots content.",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "code": "DROP_BAGS",
+      "comment": "Player's clone will contain player's bags.",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "code": "KILL_AFTER_LOGIN",
+      "comment": "Kill player if player's clone was killed.",
+      "type": "boolean",
+      "default": true
+    },
+    {
+      "code": "TIME_TO_DISAPPEAR",
+      "comment": "How long player's clone will exist.",
+      "type": "integer",
+      "default": 30,
+      "range": {
+        "min": 10,
+        "max": 3600
+      }
+    }
+  ]
+}

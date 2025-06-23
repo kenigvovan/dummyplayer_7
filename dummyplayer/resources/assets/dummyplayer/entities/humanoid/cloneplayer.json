@@ -385,7 +385,7 @@
 		]
 	},
 	"client": {
-		"renderer": "SkinnableShape",
+		"renderer": "Shape",
 		"shape": { "base": "game:entity/humanoid/seraph-faceless" },
 		"texture": { "base": "game:entity/humanoid/seraph-naked-hairless" },
 		"behaviors": [
@@ -397,6 +397,7 @@
 			{ "code": "interpolateposition" },
 			{ "code": "aimingaccuracy" },
 			{ "code": "extraskinnable" },
+			{ "code": "seraphinventory" },
 			{
 				"code": "nametag",
 				"showtagonlywhentargeted": false
@@ -900,219 +901,14 @@
 				"maxhealth": 15.0
 			},
 			{ "code": "extraskinnable" },
+			{ "code": "seraphinventory" },
 
 			{
 				"code": "nametag",
 				"showtagonlywhentargeted": false,
 				"selectFromRandomName": [ "Test Dummy" ]
 			},
-			{ "code": "breathe" },
-			{ "code": "shield" },
-			{
-				"code": "gear",
-				"gearBags": [
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "clothes-upperbody-commoner-shirt"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbodyover-commoner-coat"
-							},
-							{
-								"type": "item",
-								"code": "clothes-lowerbody-commoner-trousers"
-							},
-							{
-								"type": "item",
-								"code": "clothes-foot-commoner-boots"
-							},
-							{
-								"type": "item",
-								"code": "clothes-hand-commoner-gloves"
-							}
-						]
-					},
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "clothes-head-hunter-cape"
-							},
-							{
-								"type": "item",
-								"code": "clothes-shoulder-hunter-poncho"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbody-hunter-shirt"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbodyover-hunter-coat"
-							},
-							{
-								"type": "item",
-								"code": "clothes-lowerbody-hunter-leggings"
-							},
-							{
-								"type": "item",
-								"code": "clothes-foot-hunter-boots"
-							},
-							{
-								"type": "item",
-								"code": "clothes-face-hunter-mask"
-							},
-							{
-								"type": "item",
-								"code": "clothes-hand-hunter-gloves"
-							}
-						]
-					},
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "clothes-upperbody-malefactor-tunic"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbodyover-malefactor-cloak"
-							},
-							{
-								"type": "item",
-								"code": "clothes-lowerbody-malefactor-trousers"
-							},
-							{
-								"type": "item",
-								"code": "clothes-foot-malefactor-boots"
-							},
-							{
-								"type": "item",
-								"code": "clothes-emblem-malefactor-pendant"
-							},
-							{
-								"type": "item",
-								"code": "clothes-face-malefactor-mask"
-							},
-							{
-								"type": "item",
-								"code": "clothes-hand-malefactor-gloves"
-							},
-							{
-								"type": "item",
-								"code": "clothes-waist-malefactor-sash"
-							}
-						]
-					},
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "clothes-shoulder-clockmaker-apron"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbody-clockmaker-shirt"
-							},
-							{
-								"type": "item",
-								"code": "clothes-upperbodyover-clockmaker-tunic"
-							},
-							{
-								"type": "item",
-								"code": "clothes-lowerbody-clockmaker-pants"
-							},
-							{
-								"type": "item",
-								"code": "clothes-foot-clockmaker-shoes"
-							},
-							{
-								"type": "item",
-								"code": "clothes-hand-clockmaker-wristguard"
-							},
-							{
-								"type": "item",
-								"code": "clothes-waist-clockmaker-belt"
-							}
-						]
-					},
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "clothes-upperbody-blackguard-shirt"
-							},
-							{
-								"type": "item",
-								"code": "clothes-lowerbody-blackguard-leggings"
-							},
-							{
-								"type": "item",
-								"code": "clothes-foot-blackguard-shoes"
-							},
-							{
-								"type": "item",
-								"code": "clothes-emblem-blackguard-pin"
-							},
-							{
-								"type": "item",
-								"code": "clothes-waist-blackguard-belt"
-							}
-						]
-					}
-				]
-			},
-			{
-				"code": "gear",
-				"gearBags": [
-					{
-						"chance": 1,
-						"gear": [
-							{
-								"type": "item",
-								"code": "stick"
-							}
-						]
-					}
-				]
-			},
-			{
-				"code": "emotionstates",
-				"states": [
-					{
-						"code": "aggressiveondamage",
-						"duration": 100,
-						"chance": 0.6,
-						"slot": 0,
-						"priority": 2,
-						"accumType": "noaccum"
-					},
-					{
-						"code": "fleeondamage",
-						"duration": 10,
-						"chance": 0,
-						"slot": 0,
-						"priority": 1,
-						"accumType": "max"
-					},
-					{
-						"code": "saturated",
-						"duration": 1200,
-						"chance": 0,
-						"slot": 0,
-						"priority": 1,
-						"accumType": "sum"
-					}
-				]
-			}
+			{ "code": "breathe" }			
 		]
 
 			},

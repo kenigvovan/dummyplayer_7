@@ -1,60 +1,51 @@
-﻿using System;
+﻿using PlayerCorpse;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Vintagestory.API.Common;
 
-namespace berg.src
+namespace dummyplayer.src
 {
-    //
-    //https://github.com/DArkHekRoMaNT
-    //
     public class Config
     {
-        public static Config Current { get; set; } = new Config();
-        public class Part<Config>
+        public int SECONDS_PVP_TAG_TIMER { get; set; } = 30;
+
+        public bool DROP_ARMOR = false;
+
+        public bool DROP_CLOTHS = false;
+
+        public bool DROP_HOTBAR = true;
+
+        public bool DROP_BAGS = true;
+
+        public bool KILL_AFTER_LOGIN = true;
+
+        public int TIME_TO_DISAPPEAR = 30;
+
+        public bool SPAWN_CLONE_ON_PLAYER_LEAVE = false;
+        public bool CLONE_IS_DAMAGABLE = true;
+
+        public int TIME_TO_DISAPPEAR_WITH_SPAWN_CLINE_ON_PLAYER_LEAVE = 0;
+        public void loadDatabaseConfig(ICoreAPI api)
         {
-            public readonly string Comment;
-            public readonly Config Default;
-            private Config val;
-            public Config Val
-            {
-                get => (val != null ? val : val = Default);
-                set => val = (value != null ? value : Default);
-            }
-            public Part(Config Default, string Comment = null)
-            {
-                this.Default = Default;
-                this.Val = Default;
-                this.Comment = Comment;
-            }
-            public Part(Config Default, string prefix, string[] allowed, string postfix = null)
-            {
-                this.Default = Default;
-                this.Val = Default;
-                this.Comment = prefix;
-
-                this.Comment += "[" + allowed[0];
-                for (int i = 1; i < allowed.Length; i++)
+            try
+            {              
+                dummyplayer.config = api.LoadModConfig<Config>("dummyplayer.json");
+                if (dummyplayer.config != null)
                 {
-                    this.Comment += ", " + allowed[i];
+                    api.StoreModConfig<Config>(dummyplayer.config, "dummyplayer.json");
+                    return;
                 }
-                this.Comment += "]" + postfix;
             }
+            catch (Exception e)
+            {
+            }
+
+            dummyplayer.config = new Config();
+            api.StoreModConfig<Config>(dummyplayer.config, "dummyplayer.json");
+            return;
         }
-        public Part<bool> test { get; set; } = new Part<bool>(true);
-        public Part<int> SECONDS_PVP_TAG_TIMER { get; set; } = new Part<int>(30);
-
-        public Part<bool> DROP_ARMOR = new Part<bool>(false);
-
-        public Part<bool> DROP_CLOTHS = new Part<bool>(false);
-
-        public Part<bool> DROP_HOTBAR = new Part<bool>(true);
-
-        public Part<bool> DROP_BAGS = new Part<bool>(true);
-
-        public Part<bool> KILL_AFTER_LOGIN = new Part<bool>(true);
-
-        public Part<int> TIME_TO_DISAPPEAR = new Part<int>(30);
     }
 }

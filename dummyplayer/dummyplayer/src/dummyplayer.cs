@@ -1,4 +1,4 @@
-﻿using berg.src;
+﻿
 using dummyplayer.src.behavior;
 using dummyplayer.src.entity;
 using dummyplayer.src.harmony;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.CommandAbbr;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
@@ -25,12 +26,26 @@ namespace dummyplayer.src
         public static Dictionary<string, EntityClonePlayer> playersClones;
         public static Dictionary<string, string> playersToDieUids;
         public static Dictionary<string, float> playersSavedHealth;
-        public static ICoreServerAPI sapi;
-        
+        public ICoreServerAPI sapi;
+        public static ICoreAPI api;
+        public static Config config;
+        public override void StartPre(ICoreAPI api)
+        {
+            base.StartPre(api);
+            dummyplayer.api = api;
+        }
+        public override bool ShouldLoad(EnumAppSide forSide)
+        {
+            return base.ShouldLoad(forSide);
+        }
         public override void StartClientSide(ICoreClientAPI api)
         {
             base.StartClientSide(api);
-            
+            if(config == null)
+            {
+                config = new();
+                config.loadDatabaseConfig(api);
+            }
         }
         public override void Start(ICoreAPI api)
         {
@@ -48,9 +63,14 @@ namespace dummyplayer.src
             api.Event.PlayerDisconnect += onPlayerDisconnect;
             api.Event.PlayerNowPlaying += onPlayerNowPlaying;
             api.Event.ServerRunPhase(EnumServerRunPhase.ModsAndConfigReady, onModsAndConfigReady);
-            /*api.ChatCommands.Create("dummyplayer")
+
+            api.Event.GameWorldSave += SaveModStructuresToSaveGame;
+
+            api.ChatCommands.Create("dummyplayer")
                 .RequiresPlayer().RequiresPrivilege(Privilege.controlserver)
-                .HandleWith(onCommand);*/
+                    .BeginSub("todie")
+                        .HandleWith(onToDieCommand)
+                    .EndSub();
             
             var s = api.WorldManager.SaveGame.GetData<Dictionary<string, string>>("dummyplayertodienew");
             if(s != null)
@@ -67,7 +87,8 @@ namespace dummyplayer.src
         }
         public void onModsAndConfigReady()
         {
-            loadDatabaseConfig(false);
+            config = new();
+            config.loadDatabaseConfig(api);
         }
 
         public void onPlayerNowPlaying(IServerPlayer player)
@@ -76,9 +97,10 @@ namespace dummyplayer.src
             {
                 playersToDieUids.Remove(player.PlayerUID);
                 removeItemsFromPlayerInvAfterLogin(player);
-                if (Config.Current.KILL_AFTER_LOGIN.Val)
+                if (config.KILL_AFTER_LOGIN)
                 {
-                    IPlayer killer = dummyplayer.sapi.World.PlayerByUid(val);
+                    //string val = "test";
+                    IPlayer killer = this.sapi.World.PlayerByUid(val);
                     if (killer != null)
                     {
                         DamageSource dmgS = new DamageSource();
@@ -89,14 +111,20 @@ namespace dummyplayer.src
                     }
                     else
                     {
-                        player.Entity.Die();
+                        DamageSource dmgS = new DamageSource();
+                        dmgS.Type = EnumDamageType.Suffocation;
+                        dmgS.Source = EnumDamageSource.Internal;
+                        player.Entity.Die(EnumDespawnReason.Death, dmgS);
                     }
                 }
             }
-            else if(playersClones.ContainsKey(player.PlayerUID))
+            else if(playersClones.ContainsKey(player.PlayerUID) || dummyplayer.config.SPAWN_CLONE_ON_PLAYER_LEAVE)
             {
                 //return drops to player and remove entity
-                playersClones.TryGetValue(player.PlayerUID, out EntityClonePlayer entityClonePlayer);
+                if(!playersClones.TryGetValue(player.PlayerUID, out EntityClonePlayer entityClonePlayer))
+                {
+                    return;
+                }
                 playersClones.Remove(player.PlayerUID);
                 ITreeAttribute treeClone = entityClonePlayer.WatchedAttributes.GetTreeAttribute("health");
                 float curHealth = treeClone.GetFloat("currenthealth");
@@ -125,12 +153,12 @@ namespace dummyplayer.src
             //if(Config.Current.DROP_CLOTHS)
             for (int i = 0; i < 15; i++)
             {
-                if (!Config.Current.DROP_CLOTHS.Val && i < 12)
+                if (!config.DROP_CLOTHS && i < 12)
                 {
                     continue;
                 }
 
-                if (!Config.Current.DROP_ARMOR.Val && (i == 12 || i == 13 || i == 14))
+                if (!config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
                 {
                     continue;
                 }
@@ -141,7 +169,7 @@ namespace dummyplayer.src
                 playerCharacter[i].MarkDirty();
             }
 
-            if (Config.Current.DROP_HOTBAR.Val)
+            if (config.DROP_HOTBAR)
             {
                 for (int i = 0; i < playerHotbar.Count; i++)
                 {
@@ -152,7 +180,7 @@ namespace dummyplayer.src
 
                 }
             }
-            if (Config.Current.DROP_BAGS.Val)
+            if (config.DROP_BAGS)
             {
                 for (int i = 0; i < 4; i++)
                 {
@@ -168,21 +196,22 @@ namespace dummyplayer.src
             if (playersClones.ContainsKey(player.PlayerUID))
             {
                 playersClones.TryGetValue(player.PlayerUID, out EntityClonePlayer ecp);
-                ecp.Die();
+                ecp.Die(EnumDespawnReason.Removed);
                 playersClones.Remove(player.PlayerUID);
             }
             EntityProperties entit1yType = player.Entity.World.GetEntityType(new AssetLocation("dummyplayer", "cloneplayer"));
 
             EntityClonePlayer entity = (EntityClonePlayer)player.Entity.World.ClassRegistry.CreateEntity(entit1yType);
-            entity.setTimestampToDisappear(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + Config.Current.TIME_TO_DISAPPEAR.Val);
-            entity.addDrops(player);
+            entity.setTimestampToDisappear(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + config.TIME_TO_DISAPPEAR);
+            
             entity.setSourceEntityUID(player.PlayerUID);
-
+            entity.sourceName = player.PlayerName;
+            
             entity.InChunkIndex3d = player.Entity.InChunkIndex3d;
             ITreeAttribute treetmp = player.Entity.WatchedAttributes.GetTreeAttribute("health").Clone();
 
             entity.Initialize(entit1yType.Clone(), player.Entity.World.Api, player.Entity.InChunkIndex3d);
-
+           
             entity.ServerPos = player.Entity.ServerPos.Copy();
             entity.Pos.SetFrom(player.Entity.ServerPos);
             entity.WatchedAttributes.SetAttribute("health", treetmp);
@@ -194,64 +223,68 @@ namespace dummyplayer.src
             entity.WatchedAttributes.SetAttribute("skinConfig", treetmp);
             entity.WatchedAttributes.MarkAllDirty();
             entity.ServerPos.Pitch = 0;
-            player.Entity.World.SpawnEntity(entity);            
+            player.Entity.World.SpawnEntity(entity);
+            entity.addDrops(player);
+            EntityBehaviorTexturedClothing ebhtc = entity.GetBehavior<EntityBehaviorTexturedClothing>();
+            InventoryBase inv = ebhtc.Inventory;
         }
-        public static TextCommandResult onCommand(TextCommandCallingArgs args)
+        public static TextCommandResult onToDieCommand(TextCommandCallingArgs args)
         {
-            IServerPlayer player = args.Caller.Player as IServerPlayer;
-            TextCommandResult tcr = new TextCommandResult();
-            tcr.Status = EnumCommandStatus.Error;
 
+            IServerPlayer player = args.Caller.Player as IServerPlayer;
             SpawnPlayerClone(player);
+            TextCommandResult tcr = new TextCommandResult();
+            tcr.Status = EnumCommandStatus.Success;
+            
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Player uid | killer uid");
+            foreach(var it in playersToDieUids)
+            {
+                sb.Append(it.Key + " | " + (it.Value.Equals("") ? "No killer" : it.Value));
+            }
+            player.SendMessage(0, sb.ToString(), EnumChatType.Notification);
+
             return tcr;
         }
+
         public void onPlayerDisconnect(IServerPlayer player)
         {
             pvpTagEntityBehavior pteb = player.Entity.GetBehavior<pvpTagEntityBehavior>();
-            if(pteb == null || pteb.timer <= 0)
+            if(!dummyplayer.config.SPAWN_CLONE_ON_PLAYER_LEAVE && (pteb == null || pteb.timer <= 0))
             {
                 return;
             }
-            pteb.timer = 0;
+            if (pteb != null)
+            {
+                pteb.timer = 0;
+            }
             SpawnPlayerClone(player);
+        }
+
+        public void SaveModStructuresToSaveGame()
+        {
+            if (playersToDieUids != null)
+            {
+                sapi.WorldManager.SaveGame.StoreData<Dictionary<string, string>>("dummyplayertodienew", dummyplayer.playersToDieUids);
+                sapi.Logger.Debug("[dummyplayer] Dispose::playersToDieUids saved in SaveGame");
+            }
+            if (playersSavedHealth != null)
+            {
+                sapi.WorldManager.SaveGame.StoreData<Dictionary<string, float>>("dummyplayersavehealth", dummyplayer.playersSavedHealth);
+                sapi.Logger.Debug("[dummyplayer] Dispose::playersSavedHealth saved in SaveGame");
+            }
         }
         public override void Dispose()
         {
             base.Dispose();
             if(harmonyInstance != null)
             {
-                harmonyInstance.UnpatchAll();
-            }
-            if (playersToDieUids != null && dummyplayer.playersToDieUids.Count != 0)
-            {
-                sapi.WorldManager.SaveGame.StoreData<Dictionary<string, string>>("dummyplayertodienew", dummyplayer.playersToDieUids);
-            }
-            if (playersSavedHealth != null && dummyplayer.playersSavedHealth.Count != 0)
-            {
-                sapi.WorldManager.SaveGame.StoreData<Dictionary<string, float>>("dummyplayersavehealth", dummyplayer.playersSavedHealth);
-            }
-            harmonyInstance = null;
-        }
-        private void loadDatabaseConfig(bool reload)
-        {
-            try
-            {
-                Config.Current = sapi.LoadModConfig<Config>(this.Mod.Info.ModID + ".json");
-                if (Config.Current != null)
-                {
-                    sapi.StoreModConfig<Config>(Config.Current, this.Mod.Info.ModID + ".json");
-                    return;
-                }
-            }
-            catch (Exception e)
-            {
-
-            }
-
-            Config.Current = new Config();
-            sapi.StoreModConfig<Config>(Config.Current, this.Mod.Info.ModID + ".json");
-            return;
-
-        }
+                harmonyInstance.UnpatchAll(dummyplayer.harmonyID);
+                harmonyInstance = null;
+            }                 
+            api = null;
+            config = null;
+        }       
     }
 }

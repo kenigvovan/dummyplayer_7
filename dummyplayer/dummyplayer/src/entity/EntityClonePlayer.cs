@@ -9,7 +9,6 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using Vintagestory.API.Config;
 using Vintagestory.Common;
-using berg.src;
 using dummyplayer.src.Inventory;
 
 namespace dummyplayer.src.entity
@@ -18,7 +17,8 @@ namespace dummyplayer.src.entity
     {
         protected InventoryBase inv;
         protected InventoryBase invOthers;
-        string sourceEntityUID;
+        public string sourceEntityUID;
+        public string sourceName;
         long timeStampToDisappear;
         double counter = 0;
 
@@ -28,11 +28,20 @@ namespace dummyplayer.src.entity
         }
 
 
-        public override IInventory GearInventory
+        public IInventory GearInventory
         {
             get
             {
+                EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
+                InventoryBase inv = ebhtc.Inventory;
                 return inv;
+            }
+        }
+        public IInventory OtherInventory
+        {
+            get
+            {
+                return invOthers;
             }
         }
 
@@ -97,7 +106,7 @@ namespace dummyplayer.src.entity
             inv.LateInitialize("gearinv-" + EntityId, api);
             invOthers.LateInitialize("invOther-" + EntityId, api);
 
-            AnimManager.HeadController = new EntityHeadController(AnimManager, this, Properties.Client.LoadedShape);
+            //AnimManager.HeadController = new EntityHeadController(AnimManager, this, Properties.Client.LoadedShape);
         }
 
         public override void OnGameTick(float dt)
@@ -105,29 +114,32 @@ namespace dummyplayer.src.entity
             base.OnGameTick(dt);
             if (World.Side == EnumAppSide.Server)
             {
-                counter += dt;
-                if (counter > 5)
+                if (dummyplayer.config.TIME_TO_DISAPPEAR_WITH_SPAWN_CLINE_ON_PLAYER_LEAVE > 0)
                 {
-                    counter = 0;
-                    if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= timeStampToDisappear)
+                    counter += dt;
+                    if (counter > 5)
                     {
-                        if (dummyplayer.playersClones.ContainsKey(sourceEntityUID))
+                        counter = 0;
+                        if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= timeStampToDisappear)
                         {
-                            dummyplayer.playersClones.Remove(sourceEntityUID);
+                            if (dummyplayer.playersClones.ContainsKey(sourceEntityUID))
+                            {
+                                dummyplayer.playersClones.Remove(sourceEntityUID);
+                            }
+                            if (dummyplayer.playersSavedHealth.ContainsKey(sourceEntityUID))
+                            {
+                                ITreeAttribute treeClone = WatchedAttributes.GetTreeAttribute("health");
+                                float curHealth = treeClone.GetFloat("currenthealth");
+                                dummyplayer.playersSavedHealth[sourceEntityUID] = curHealth;
+                            }
+                            else
+                            {
+                                ITreeAttribute treeClone = WatchedAttributes.GetTreeAttribute("health");
+                                float curHealth = treeClone.GetFloat("currenthealth");
+                                dummyplayer.playersSavedHealth.Add(sourceEntityUID, curHealth);
+                            }
+                            Die(EnumDespawnReason.Removed);
                         }
-                        if (dummyplayer.playersSavedHealth.ContainsKey(sourceEntityUID))
-                        {
-                            ITreeAttribute treeClone = WatchedAttributes.GetTreeAttribute("health");
-                            float curHealth = treeClone.GetFloat("currenthealth");
-                            dummyplayer.playersSavedHealth[sourceEntityUID] = curHealth;
-                        }
-                        else
-                        {
-                            ITreeAttribute treeClone = WatchedAttributes.GetTreeAttribute("health");
-                            float curHealth = treeClone.GetFloat("currenthealth");
-                            dummyplayer.playersSavedHealth.Add(sourceEntityUID, curHealth);
-                        }
-                        Die(EnumDespawnReason.Removed);
                     }
                 }
             }
@@ -144,6 +156,18 @@ namespace dummyplayer.src.entity
             if (World.Side == EnumAppSide.Server && sourceEntityUID != null)
             {
                 dummyplayer.playersClones.Add(sourceEntityUID, this);
+            }
+            JsonObject attributes = base.Properties.Attributes;
+            JsonObject inv = (attributes != null) ? attributes["inventory"] : null;
+            if (inv != null && inv.Exists)
+            {
+                foreach (JsonItemStack jstack in inv.AsArray<JsonItemStack>(null, null))
+                {
+                    if (jstack.Resolve(this.World, "player bot inventory", true))
+                    {
+                        this.TryGiveItemStack(jstack.ResolvedItemstack);
+                    }
+                }
             }
         }
         public override void OnEntityLoaded()
@@ -168,7 +192,7 @@ namespace dummyplayer.src.entity
             WatchedAttributes["invOther"] = treeO = new TreeAttribute();
             inv.ToTreeAttributes(treeO);
             WatchedAttributes.SetString("sourceEntityUID", sourceEntityUID);
-
+            WatchedAttributes.SetString("sourceName", sourceName);
             base.ToBytes(writer, forClient);
         }
 
@@ -187,6 +211,7 @@ namespace dummyplayer.src.entity
             if (treeO != null) inv.FromTreeAttributes(treeO);
 
             sourceEntityUID = WatchedAttributes.GetString("sourceEntityUID");
+            sourceName = WatchedAttributes.GetString("sourceName");
         }
 
         public override void OnInteract(EntityAgent byEntity, ItemSlot slot, Vec3d hitPosition, EnumInteractMode mode)
@@ -203,13 +228,15 @@ namespace dummyplayer.src.entity
         public override void Die(EnumDespawnReason reason = EnumDespawnReason.Death, DamageSource damageSourceForDeath = null)
         {
             base.Die(reason, damageSourceForDeath);
-            dummyplayer.sapi.Logger.Error("reason " + reason.ToString());
+            this.Api.Logger.Error("reason " + reason.ToString());
 
             if (World.Side == EnumAppSide.Server)
                 dummyplayer.playersClones.Remove(sourceEntityUID);
             if (reason != EnumDespawnReason.Removed && reason != EnumDespawnReason.Unload && reason != EnumDespawnReason.OutOfRange)
             {
-                inv.DropAll(SidedPos.XYZ);
+                /*EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
+                InventoryBase inv2 = ebhtc.Inventory;*/
+                (GearInventory as InventoryBase).DropAll(SidedPos.XYZ);
                 invOthers.DropAll(SidedPos.XYZ);
                 if (damageSourceForDeath != null && damageSourceForDeath.SourceEntity is EntityPlayer entityPlayer)
                 {
@@ -222,7 +249,12 @@ namespace dummyplayer.src.entity
         public void addDrops(IServerPlayer player)
         {
             //Players cloths and armor
+            //this
             InventoryCharacter playerCharacter = (InventoryCharacter)player.InventoryManager.GetOwnInventory("character");
+            EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
+            InventoryBase inv2 = ebhtc.Inventory;
+
+            var c = GearInventory;
             //Player's hotbar
             IInventory playerHotbar = player.InventoryManager.GetHotbarInventory();
             InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)player.InventoryManager.GetOwnInventory("backpack");
@@ -234,25 +266,27 @@ namespace dummyplayer.src.entity
             //if(Config.Current.DROP_CLOTHS)
             for (int i = 0; i < 15; i++)
             {
-                if (!Config.Current.DROP_CLOTHS.Val && i < 12)
+                if (!dummyplayer.config.DROP_CLOTHS && i < 12)
                 {
                     continue;
                 }
 
-                if (!Config.Current.DROP_ARMOR.Val && (i == 12 || i == 13 || i == 14))
+                if (!dummyplayer.config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
                 {
                     continue;
                 }
 
                 if (playerCharacter[i].Itemstack == null)
                     continue;
-                inv[i].Itemstack = playerCharacter[i].Itemstack.Clone();
+                GearInventory[i].Itemstack = playerCharacter[i].Itemstack.Clone();
                 //playerCharacter[i].Itemstack = null;
                 //playerCharacter[i].MarkDirty();
             }
 
-            if (Config.Current.DROP_HOTBAR.Val)
+            if (dummyplayer.config.DROP_HOTBAR)
             {
+               
+
                 for (int i = 0; i < playerHotbar.Count; i++)
                 {
                     if (playerHotbar[i].Itemstack == null)
@@ -264,7 +298,7 @@ namespace dummyplayer.src.entity
 
                 }
             }
-            if (Config.Current.DROP_BAGS.Val)
+            if (dummyplayer.config.DROP_BAGS)
             {
                 for (int i = 0; i < 4; i++)
                 {
@@ -275,6 +309,7 @@ namespace dummyplayer.src.entity
                     //playerBackpacks[i].MarkDirty();
                 }
             }
+            
         }
         public void returnDrops(IServerPlayer player)
         {
@@ -290,7 +325,7 @@ namespace dummyplayer.src.entity
             //Armor, cloths
             for (int i = 0; i < 15; i++)
             {
-                if (!Config.Current.DROP_ARMOR.Val && (i == 12 || i == 13 || i == 14))
+                if (!dummyplayer.config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
                 {
                     continue;
                 }
@@ -302,7 +337,7 @@ namespace dummyplayer.src.entity
             }
 
             //Hotbar
-            if (Config.Current.DROP_HOTBAR.Val)
+            if (dummyplayer.config.DROP_HOTBAR)
             {
                 for (int i = 0; i < 11; i++)
                 {
@@ -315,7 +350,7 @@ namespace dummyplayer.src.entity
             }
 
             //Bags
-            if (Config.Current.DROP_BAGS.Val)
+            if (dummyplayer.config.DROP_BAGS)
             {
                 for (int i = 0; i < inv.Count - 11 - 15; i++)
                 {
@@ -329,6 +364,10 @@ namespace dummyplayer.src.entity
         }
         public override bool ReceiveDamage(DamageSource damageSource, float damage)
         {
+            if(!dummyplayer.config.CLONE_IS_DAMAGABLE)
+            {
+                return false;
+            }
             float dmg = handleDefense(damage, damageSource);
             return base.ReceiveDamage(damageSource, dmg);
         }

@@ -1,4 +1,4 @@
-﻿using berg.src;
+﻿using PlayerCorpse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,16 +54,17 @@ namespace dummyplayer.src.behavior
             base.OnEntityReceiveDamage(damageSource, ref damage);
             if (damageSource.SourceEntity is EntityPlayer ourPlayer && entity is EntityPlayer)
             {
+                if(!ourPlayer.PlayerUID.Equals((entity as EntityPlayer).PlayerUID))
                 {
                     if (ourPlayer.Api.Side == EnumAppSide.Server)
                     {
                         if (!playerMentionedStart)
                         {
-                            ((entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", Config.Current.SECONDS_PVP_TAG_TIMER.Val), EnumChatType.Notification);
+                            ((entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);
                             playerMentionedStart = true;
                             playerMentionedEnd = false;
                         }
-                        timer = Config.Current.SECONDS_PVP_TAG_TIMER.Val;
+                        timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
 
                         pvpTagEntityBehavior tpeb = ourPlayer.GetBehavior<pvpTagEntityBehavior>();
                         if (tpeb != null)
@@ -72,10 +73,10 @@ namespace dummyplayer.src.behavior
                             {
                                 tpeb.playerMentionedStart = true;
                                 tpeb.playerMentionedEnd = false;
-                                (ourPlayer.Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", Config.Current.SECONDS_PVP_TAG_TIMER.Val), EnumChatType.Notification);
+                                (ourPlayer.Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);
                             }
 
-                            tpeb.timer = Config.Current.SECONDS_PVP_TAG_TIMER.Val;
+                            tpeb.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                         }
 
                     }
