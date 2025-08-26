@@ -265,8 +265,6 @@ namespace dummyplayer.src.entity
             EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
             InventoryBase inv2 = ebhtc.Inventory;
 
-            var c = GearInventory;
-            //Player's hotbar
             IInventory playerHotbar = player.InventoryManager.GetHotbarInventory();
             InventoryPlayerBackPacks playerBackpacks = (InventoryPlayerBackPacks)player.InventoryManager.GetOwnInventory("backpack");
             if (playerCharacter.Count > inv.Count || invOthers.Count < playerHotbar.Count + 4)
@@ -282,7 +280,11 @@ namespace dummyplayer.src.entity
                     continue;
                 }
 
-                if (!dummyplayer.config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
+                if (coActive && !dummyplayer.config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
+                {
+                    continue;
+                }
+                if (!coActive && !dummyplayer.config.DROP_ARMOR && (i >= 12 && i <= 38))
                 {
                     continue;
                 }
@@ -291,6 +293,7 @@ namespace dummyplayer.src.entity
                     continue;
                 
                 GearInventory[i].Itemstack = playerCharacter[i].Itemstack.Clone();
+                GearInventory[i].MarkDirty();
                 //playerCharacter[i].Itemstack = null;
                 //playerCharacter[i].MarkDirty();
             }
@@ -321,7 +324,6 @@ namespace dummyplayer.src.entity
                     //playerBackpacks[i].MarkDirty();
                 }
             }
-            
         }
         public void returnDrops(IServerPlayer player)
         {

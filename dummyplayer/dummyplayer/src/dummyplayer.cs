@@ -114,6 +114,7 @@ namespace dummyplayer.src
             base.Start(api);
             api.RegisterEntity("EntityClonePlayer", typeof(EntityClonePlayer));
             api.RegisterEntityBehaviorClass("pvpTag", typeof(pvpTagEntityBehavior));
+            api.RegisterEntityBehaviorClass("cloneinventory", typeof(EntityBehaviorCloneInventory));
         }
         public override void StartServerSide(ICoreServerAPI api)
         {           
@@ -213,14 +214,19 @@ namespace dummyplayer.src
             IInventory playerHotbar = player.InventoryManager.GetHotbarInventory();
             InventoryPlayerBackPacks playerBackpacks = ((InventoryPlayerBackPacks)player.InventoryManager.GetOwnInventory("backpack"));
             //if(Config.Current.DROP_CLOTHS)
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < playerCharacter.Count; i++)
             {
                 if (!config.DROP_CLOTHS && i < 12)
                 {
                     continue;
                 }
 
-                if (!config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
+                if (!EntityClonePlayer.coActive && !config.DROP_ARMOR && (i == 12 || i == 13 || i == 14))
+                {
+                    continue;
+                }
+
+                if (EntityClonePlayer.coActive && !dummyplayer.config.DROP_ARMOR && (i >= 12 && i <= 38))
                 {
                     continue;
                 }

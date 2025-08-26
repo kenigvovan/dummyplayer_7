@@ -397,7 +397,7 @@
 			{ "code": "interpolateposition" },
 			{ "code": "aimingaccuracy" },
 			{ "code": "extraskinnable" },
-			{ "code": "seraphinventory" },
+			{ "code": "cloneinventory" },
 			{
 				"code": "nametag",
 				"showtagonlywhentargeted": false
@@ -901,7 +901,7 @@
 				"maxhealth": 15.0
 			},
 			{ "code": "extraskinnable" },
-			{ "code": "seraphinventory" },
+			{ "code": "cloneinventory" },
 
 			{
 				"code": "nametag",
