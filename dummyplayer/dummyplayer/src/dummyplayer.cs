@@ -132,7 +132,7 @@ namespace dummyplayer.src
                 treePlayer.SetFloat("currenthealth", curHealth);
                 player.Entity.WatchedAttributes.MarkAllDirty();
                 entityClonePlayer.returnDrops(player);
-                entityClonePlayer.Die(EnumDespawnReason.Removed);
+                entityClonePlayer.Die(EnumDespawnReason.Removed, null);
             }
             else if(playersSavedHealth.ContainsKey(player.PlayerUID))
             {
