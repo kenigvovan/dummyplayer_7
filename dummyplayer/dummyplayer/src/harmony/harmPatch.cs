@@ -42,17 +42,25 @@ namespace dummyplayer.src.harmony
 
                 if (pteb != null)
                 {
-                    pteb.timer = 30;
+                    if(pteb.timer <= 0)
+                    {
+                        (pteb.entity.Api as ICoreServerAPI).Network.SendEntityPacket(((pteb.entity as EntityPlayer).Player as IServerPlayer), pteb.entity.EntityId, 2501, new byte[] { 1 });
+                    }
+                    pteb.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                     if (!pteb.playerMentionedStart)
                     {
                         pteb.playerMentionedEnd = false;
-                        ((pteb.entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);
+                        ((pteb.entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);                        
                     }
                 }
                 else
                 {
                     var behtmp = new pvpTagEntityBehavior(__instance);
-                    behtmp.timer = 30;
+                    if (pteb.timer <= 0)
+                    {
+                        (pteb.entity.Api as ICoreServerAPI).Network.SendEntityPacket(((pteb.entity as EntityPlayer).Player as IServerPlayer), pteb.entity.EntityId, 2501, new byte[] { 1 });
+                    }
+                    behtmp.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                     __instance.AddBehavior(behtmp);
                     pteb.playerMentionedEnd = false;
                     ((behtmp.entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);
@@ -62,7 +70,11 @@ namespace dummyplayer.src.harmony
 
                 if (pteb != null)
                 {
-                    pteb.timer = 30;
+                    if (pteb.timer <= 0)
+                    {
+                        (pteb.entity.Api as ICoreServerAPI).Network.SendEntityPacket(((pteb.entity as EntityPlayer).Player as IServerPlayer), pteb.entity.EntityId, 2501, new byte[] { 1 });
+                    }
+                    pteb.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                     if (!pteb.playerMentionedStart)
                     {
                         pteb.playerMentionedEnd = false;
@@ -72,7 +84,11 @@ namespace dummyplayer.src.harmony
                 else
                 {
                     var behtmp = new pvpTagEntityBehavior(__instance);
-                    behtmp.timer = 30;
+                    if (pteb.timer <= 0)
+                    {
+                        (pteb.entity.Api as ICoreServerAPI).Network.SendEntityPacket(((pteb.entity as EntityPlayer).Player as IServerPlayer), pteb.entity.EntityId, 2501, new byte[] { 1 });
+                    }
+                    behtmp.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                     __instance.AddBehavior(behtmp);
                     pteb.playerMentionedEnd = false;
                     ((behtmp.entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);

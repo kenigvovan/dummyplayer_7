@@ -18,6 +18,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using static PlayerCorpse.Config;
 
 namespace dummyplayer.src.compat.playercorpse
 {
@@ -46,7 +47,7 @@ namespace dummyplayer.src.compat.playercorpse
             var corpseEntity = CreateCorpseEntity(clonePlayer);
             if (corpseEntity.Inventory != null && !corpseEntity.Inventory.Empty)
             {
-                if (PlayerCorpse.Core.Config.CreateWaypoint == "always")
+                if (PlayerCorpse.Core.Config.CreateWaypoint == CreateWaypointMode.Always)
                 {
                     CreateDeathPoint(clonePlayer);
                 }

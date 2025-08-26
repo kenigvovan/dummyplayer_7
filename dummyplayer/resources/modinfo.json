@@ -2,10 +2,10 @@
   "type": "code",
   "modid": "dummyplayer",
   "name": "dummyplayer",
-  "author": "KenigVovan",
+    "authors": [ "KenigVovan" ],
   "description": "PVP anti-leave mod",
-  "version": "1.3.3",
-  "dependency": {
+  "version": "1.3.4",
+  "dependencies": {
     "game": ""
   }
 }

@@ -64,6 +64,10 @@ namespace dummyplayer.src.behavior
                             playerMentionedStart = true;
                             playerMentionedEnd = false;
                         }
+                        if (timer <= 0)
+                        {
+                            (entity.Api as ICoreServerAPI).Network.SendEntityPacket(((this.entity as EntityPlayer).Player as IServerPlayer), entity.EntityId, 2501, new byte[] { 1 });
+                        }
                         timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
 
                         pvpTagEntityBehavior tpeb = ourPlayer.GetBehavior<pvpTagEntityBehavior>();
@@ -75,7 +79,10 @@ namespace dummyplayer.src.behavior
                                 tpeb.playerMentionedEnd = false;
                                 (ourPlayer.Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:start_pvp_tag_timer", dummyplayer.config.SECONDS_PVP_TAG_TIMER), EnumChatType.Notification);
                             }
-
+                            if (tpeb.timer <= 0)
+                            {
+                                (entity.Api as ICoreServerAPI).Network.SendEntityPacket(((tpeb.entity as EntityPlayer).Player as IServerPlayer), tpeb.entity.EntityId, 2501, new byte[] { 1 });
+                            }
                             tpeb.timer = dummyplayer.config.SECONDS_PVP_TAG_TIMER;
                         }
 
@@ -94,6 +101,7 @@ namespace dummyplayer.src.behavior
                         ((entity as EntityPlayer).Player as IServerPlayer).SendMessage(GlobalConstants.InfoLogChatGroup, Lang.Get("dummyplayer:end_pvp_tag_timer"), EnumChatType.Notification);
                         playerMentionedEnd = true;
                         playerMentionedStart = false;
+                        (this.entity.Api as ICoreServerAPI).Network.SendEntityPacket(((this.entity as EntityPlayer).Player as IServerPlayer), this.entity.EntityId, 2501, new byte[] {0});
                     }
                     return;
                 }
@@ -116,6 +124,15 @@ namespace dummyplayer.src.behavior
             timer = 0;
             playerMentionedEnd = true;
             playerMentionedStart = false;
+        }
+        public override void OnReceivedServerPacket(int packetid, byte[] data, ref EnumHandling handled)
+        {
+            if (packetid == 2501)
+            {
+                base.OnReceivedServerPacket(packetid, data, ref handled);
+                bool val = data[0] == 1;
+                dummyplayer.TrySwitchPvpHud(val);
+            }
         }
     }
 }

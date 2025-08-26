@@ -1,18 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="cairo-sharp">
+      <HintPath>..\..\..\..\..\AppData\Roaming\Vintagestory\Lib\cairo-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="CommonLib">
-      <HintPath>..\..\..\..\..\..\Desktop\for_vs_libs\CommonLib.dll</HintPath>
+      <HintPath>..\..\..\libs\CommonLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="PlayerCorpse">
-      <HintPath>..\..\..\..\..\..\Desktop\for_vs_libs\PlayerCorpse.dll</HintPath>
+      <HintPath>..\..\..\libs\PlayerCorpse.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VintagestoryAPI">

@@ -1,6 +1,8 @@
 ﻿
+using Cairo;
 using dummyplayer.src.behavior;
 using dummyplayer.src.entity;
+using dummyplayer.src.gui;
 using dummyplayer.src.harmony;
 using HarmonyLib;
 using System;
@@ -13,9 +15,11 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.CommandAbbr;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Common;
 using Vintagestory.GameContent;
+using Vintagestory.Server;
 
 namespace dummyplayer.src
 {
@@ -29,6 +33,7 @@ namespace dummyplayer.src
         public ICoreServerAPI sapi;
         public static ICoreAPI api;
         public static Config config;
+        public static HudPvpState PvpHud { get; set; } = null;
         public override void StartPre(ICoreAPI api)
         {
             base.StartPre(api);
@@ -45,6 +50,63 @@ namespace dummyplayer.src
             {
                 config = new();
                 config.loadDatabaseConfig(api);
+            }
+            api.Gui.RegisterDialog((GuiDialog)new HudPvpState((ICoreClientAPI)api));
+            /*api.Input.RegisterHotKey("pvpstate", "Show pvp state", GlKeys.L, HotkeyType.GUIOrOtherControls);
+            api.Input.SetHotKeyHandler("pvpstate", new ActionConsumable<KeyCombination>(this.OnHotKeySkillDialog));*/
+            //PvpHud = new HudPvpState((ICoreClientAPI)api);
+            //PvpHud.ComposeGui();
+            AddCustomIcons();
+        }
+        private static bool OnHotKeySkillDialog(KeyCombination comb)
+        {
+            if(PvpHud == null)
+            {
+                PvpHud = new HudPvpState((ICoreClientAPI)api);
+                PvpHud.ComposeGui();
+            }
+            else
+            {
+                PvpHud.TryClose();
+                PvpHud = null;
+            }
+            return true;
+        }
+        public static void TrySwitchPvpHud(bool val)
+        {
+            if(val)
+            {
+                if(PvpHud == null)
+                {
+                    PvpHud = new HudPvpState((ICoreClientAPI)api);
+                    PvpHud.ComposeGui();
+                    return;
+                }
+                return;
+            }
+            else
+            {
+                if(PvpHud != null)
+                {
+                    PvpHud.TryClose();
+                    PvpHud = null;
+                }
+                return;
+            }
+        }
+        public void AddCustomIcons()
+        {
+            List<string> iconList = new List<string> { "swords-emblem" };
+            var capi = (api as ICoreClientAPI);
+            foreach (var icon in iconList)
+            {
+                capi.Gui.Icons.CustomIcons["dummyplayer:" + icon] = delegate (Context ctx, int x, int y, float w, float h, double[] rgba)
+                {
+                    AssetLocation location = new AssetLocation("dummyplayer:textures/icons/" + icon + ".svg");
+                    IAsset svgAsset = capi.Assets.TryGet(location, true);
+                    int value = ColorUtil.ColorFromRgba(175, 200, 175, 125);
+                    capi.Gui.DrawSvg(svgAsset, ctx.GetTarget() as ImageSurface, x, y, (int)w, (int)h, new int?(value));
+                };
             }
         }
         public override void Start(ICoreAPI api)
@@ -210,12 +272,14 @@ namespace dummyplayer.src
             entity.InChunkIndex3d = player.Entity.InChunkIndex3d;
             ITreeAttribute treetmp = player.Entity.WatchedAttributes.GetTreeAttribute("health").Clone();
 
-            entity.Initialize(entit1yType.Clone(), player.Entity.World.Api, player.Entity.InChunkIndex3d);
+            //entity.Initialize(entit1yType.Clone(), player.Entity.World.Api, player.Entity.InChunkIndex3d);
            
             entity.ServerPos = player.Entity.ServerPos.Copy();
             entity.Pos.SetFrom(player.Entity.ServerPos);
             entity.WatchedAttributes.SetAttribute("health", treetmp);
             treetmp = player.Entity.WatchedAttributes.GetTreeAttribute("skinConfig").Clone();
+            ITreeAttribute nameTree = player.Entity.WatchedAttributes.GetTreeAttribute("nametag").Clone();
+            entity.WatchedAttributes.SetAttribute("nametag", nameTree);
             entity.WatchedAttributes.GetTreeAttribute("nametag").SetString("name", "[bot]" + player.PlayerName);
             entity.WatchedAttributes.GetTreeAttribute("nametag").SetBool("showtagonlywhentargeted", false);
             Random rand = player.Entity.World.Rand;
@@ -224,6 +288,7 @@ namespace dummyplayer.src
             entity.WatchedAttributes.MarkAllDirty();
             entity.ServerPos.Pitch = 0;
             player.Entity.World.SpawnEntity(entity);
+            
             entity.addDrops(player);
             EntityBehaviorTexturedClothing ebhtc = entity.GetBehavior<EntityBehaviorTexturedClothing>();
             InventoryBase inv = ebhtc.Inventory;
@@ -285,6 +350,7 @@ namespace dummyplayer.src
             }                 
             api = null;
             config = null;
+            PvpHud = null;
         }       
     }
 }

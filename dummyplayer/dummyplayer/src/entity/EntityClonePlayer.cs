@@ -21,6 +21,7 @@ namespace dummyplayer.src.entity
         public string sourceName;
         long timeStampToDisappear;
         double counter = 0;
+        public static bool coActive = false;
 
         public override bool StoreWithChunk
         {
@@ -92,7 +93,14 @@ namespace dummyplayer.src.entity
         public EntityClonePlayer() : base()
         {
             //WatchedAttributes.GetString()
-            inv = new InventoryNPCGear(null, null, 17);
+            if (coActive)
+            {
+                inv = new InventoryNPCGear(null, null, 44);
+            }
+            else
+            {
+                inv = new InventoryNPCGear(null, null, 17);
+            }
             invOthers = new InventoryOther(null, null, 29);
         }
         public void setSourceEntityUID(string uid)
@@ -139,11 +147,11 @@ namespace dummyplayer.src.entity
                                 dummyplayer.playersSavedHealth.Add(sourceEntityUID, curHealth);
                             }
                             Die(EnumDespawnReason.Removed);
+                            }
                         }
                     }
                 }
             }
-        }
 
         public override void OnEntitySpawn()
         {
@@ -228,15 +236,13 @@ namespace dummyplayer.src.entity
         public override void Die(EnumDespawnReason reason = EnumDespawnReason.Death, DamageSource damageSourceForDeath = null)
         {
             base.Die(reason, damageSourceForDeath);
-            this.Api.Logger.Error("reason " + reason.ToString());
-
+            //this.Api.Logger.Error("reason " + reason.ToString());
             if (World.Side == EnumAppSide.Server)
                 dummyplayer.playersClones.Remove(sourceEntityUID);
             if (reason != EnumDespawnReason.Removed && reason != EnumDespawnReason.Unload && reason != EnumDespawnReason.OutOfRange)
             {
-                /*EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
-                InventoryBase inv2 = ebhtc.Inventory;*/
                 (GearInventory as InventoryBase).DropAll(SidedPos.XYZ);
+                invOthers.Api = this.Api;
                 invOthers.DropAll(SidedPos.XYZ);
                 if (damageSourceForDeath != null && damageSourceForDeath.SourceEntity is EntityPlayer entityPlayer)
                 {
@@ -245,12 +251,17 @@ namespace dummyplayer.src.entity
                 }
                 dummyplayer.playersToDieUids.Add(sourceEntityUID, "");
             }
+            //var r = new EntityDespawnData();
+            //r.Reason = EnumDespawnReason.Death;
+            //r.DamageSourceForDeath
+            //(this.Api as ICoreServerAPI).World.DespawnEntity(this, r);
         }
         public void addDrops(IServerPlayer player)
         {
             //Players cloths and armor
             //this
-            InventoryCharacter playerCharacter = (InventoryCharacter)player.InventoryManager.GetOwnInventory("character");
+            InventoryBase playerCharacter = (InventoryBase)player.InventoryManager.GetOwnInventory("character");
+            var cc = player.Entity.GetBehavior<EntityBehaviorPlayerInventory>()?.Inventory;
             EntityBehaviorTexturedClothing ebhtc = this.GetBehavior<EntityBehaviorTexturedClothing>();
             InventoryBase inv2 = ebhtc.Inventory;
 
@@ -264,7 +275,7 @@ namespace dummyplayer.src.entity
                 invOthers = new InventoryOther(null, null, playerHotbar.Count + 4);
             }
             //if(Config.Current.DROP_CLOTHS)
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < playerCharacter.Count; i++)
             {
                 if (!dummyplayer.config.DROP_CLOTHS && i < 12)
                 {
@@ -278,6 +289,7 @@ namespace dummyplayer.src.entity
 
                 if (playerCharacter[i].Itemstack == null)
                     continue;
+                
                 GearInventory[i].Itemstack = playerCharacter[i].Itemstack.Clone();
                 //playerCharacter[i].Itemstack = null;
                 //playerCharacter[i].MarkDirty();
@@ -368,8 +380,12 @@ namespace dummyplayer.src.entity
             {
                 return false;
             }
-            float dmg = handleDefense(damage, damageSource);
-            return base.ReceiveDamage(damageSource, dmg);
+            if (!coActive)
+            {
+                float dmg = handleDefense(damage, damageSource);
+                return base.ReceiveDamage(damageSource, dmg);
+            }
+            return base.ReceiveDamage(damageSource, damage);
         }
 
 
